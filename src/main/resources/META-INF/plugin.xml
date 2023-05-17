@@ -1,0 +1,79 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>me.panxin.plugin.idea.jumpcontroller</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>JumpToController</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="panxin@panxin.me" url="https://panxin.me">pan xin</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+Development Auxiliary Tool<br>
+JumpToController is a powerful IntelliJ IDEA plugin designed to assist developers in effortlessly exploring and navigating controller interfaces within Spring projects.
+The plugin automatically scans all controller classes in your Spring project and extracts their path information. Through an intuitive interface, you can quickly view and search for all controller interface paths in your project without the need for manual code browsing. Additionally, it supports searching by path and annotations, allowing you to efficiently locate the desired interfaces.
+Furthermore, Spring Controller Explorer seamlessly integrates with Feign invocations. When clicking on the provided icon in a Feign interface, it intelligently jumps to the corresponding controller code, facilitating a better understanding and debugging of the entire request flow.
+With its user-friendly interface, efficient path scanning, and comprehensive search capabilities, Spring Controller Explorer is an invaluable tool for developers seeking to streamline their exploration and management of controller interfaces in Spring projects. Whether you need to quickly find paths, search for annotations, or navigate to the corresponding code, this plugin enhances your development workflow with convenience and efficiency.
+]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    <!-- 添加 Lombok 依赖项 -->
+<!--    <depends>org.projectlombok</depends>-->
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+<!--        <localInspection-->
+<!--                language="JAVA"-->
+<!--                implementationClass="me.panxin.plugin.idea.jumpcontroller.inspection.ToStringMethodInspection"-->
+<!--                displayName="Missing toString Method"-->
+<!--                groupPath="Java"-->
+<!--                enabledByDefault="true"-->
+<!--                groupName="POJO Check"/>-->
+<!--        <configurableProviders>-->
+<!--            <provider implementation="com.example.ControllerPathCollectorSettingsProvider"/>-->
+<!--        </configurableProviders>-->
+<!--        <iconProvider implementation="com.example.FeignIconProvider"/>-->
+    </extensions>
+
+    <change-notes>
+        <![CDATA[
+      1.0.0 project init<br>
+        ]]>
+    </change-notes>
+    <actions>
+        <!-- 在此处添加你的Action -->
+<!--        <group id="me.panxin.plugin.idea.jumpcontroller.action" class="me.panxin.plugin.idea.jumpcontroller.action.MainActionGroup" text="JumpToController"-->
+<!--               popup="true">-->
+<!--            &lt;!&ndash;生成代码菜单&ndash;&gt;-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="first"/>-->
+<!--        </group>-->
+        <group id="JumpToController" text="JumpToController" description="JumpToController" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+            <action class="me.panxin.plugin.idea.jumpcontroller.action.ScanControllerAction"
+                    text="ListAll"
+                    description="扫描项目接口"
+            >
+            </action>
+            <action class="me.panxin.plugin.idea.jumpcontroller.action.SearchControllerAction"
+                    text="Search"
+                    description="搜索项目接口"
+            >
+            </action>
+            <action class="me.panxin.plugin.idea.jumpcontroller.action.RefreshCacheAction"
+                    text="refresh"
+                    description="刷新缓存"
+            >
+            </action>
+        </group>
+    </actions>
+
+</idea-plugin>
