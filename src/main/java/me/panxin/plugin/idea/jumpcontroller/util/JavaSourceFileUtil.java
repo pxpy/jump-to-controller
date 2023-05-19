@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringRequestMethodAnnotation.REQUEST_MAPPING;
@@ -47,72 +48,63 @@ public class JavaSourceFileUtil {
         PsiAnnotation[] annotations = psiClass.getAnnotations();
         for (PsiAnnotation annotation : annotations) {
             String annotationName = annotation.getQualifiedName();
-            if (annotationName != null && annotationName.equals("org.springframework.web.bind.annotation.RequestMapping")) {
-                PsiAnnotationParameterList parameterList = annotation.getParameterList();
-                PsiNameValuePair[] attributes = parameterList.getAttributes();
-                for (PsiNameValuePair attribute : attributes) {
-                    String attributeName = attribute.getAttributeName();
-                    if (attributeName.equals("value") || attributeName.equals("path")) {
-                        PsiAnnotationMemberValue attributeValue = attribute.getValue();
-                        if (attributeValue instanceof PsiLiteralExpression) {
-                            Object value = ((PsiLiteralExpression) attributeValue).getValue();
-                            if (value instanceof String) {
-                                return (String) value;
-                            }
-                        }
+            if (REQUEST_MAPPING.getQualifiedName().equals(annotationName)) {
+                getValueFromPsiAnnotation(annotation);
+            }
+        }
+        return "";
+    }
+    public static String getValueFromPsiAnnotation(PsiAnnotation annotation){
+        PsiAnnotationParameterList parameterList = annotation.getParameterList();
+        PsiNameValuePair[] attributes = parameterList.getAttributes();
+        for (PsiNameValuePair attribute : attributes) {
+            String attributeName = attribute.getAttributeName();
+            if ("value".equals(attributeName) || "path".equals(attributeName)) {
+                PsiAnnotationMemberValue attributeValue = attribute.getValue();
+                if (attributeValue instanceof PsiLiteralExpression) {
+                    Object value = ((PsiLiteralExpression) attributeValue).getValue();
+                    if (value instanceof String) {
+                        return ((String) value).startsWith("/") ? (String) value : "/" + value;
                     }
                 }
             }
         }
         return "";
+
     }
 
     /**
+     * 获得价值
      * 路径：类文件接口路径+方法接口路径
      *
-     * @param attributes     属性
      * @param controllerInfo 控制器信息
-     * @param parentPath     父路径
      * @param method         方法
+     * @param annotation     注释
      * @return {@link ControllerInfo}
      */
-    public static ControllerInfo getValue(PsiNameValuePair[] attributes, ControllerInfo controllerInfo, String parentPath, PsiMethod method) {
-        for (PsiNameValuePair attribute : attributes) {
-            String attributeName = attribute.getAttributeName();
-            if (attributeName.equals("value") || attributeName.equals("path")) {
-                PsiAnnotationMemberValue attributeValue = attribute.getValue();
-                if (attributeValue instanceof PsiLiteralExpression) {
-                    Object value = ((PsiLiteralExpression) attributeValue).getValue();
-                    if (value instanceof String) {
-                        String childName = ((String) value).startsWith("/") ? (String) value : "/" + (String) value;
-                        controllerInfo.setPath(parentPath + childName);
+    public static ControllerInfo getValue(PsiAnnotation annotation, ControllerInfo controllerInfo, PsiMethod method) {
+        String path = getValueFromPsiAnnotation(annotation);
+        controllerInfo.setPath(controllerInfo.getPath() + path);
+        extractSwaggerInfo(method, controllerInfo);
+        return controllerInfo;
+    }
+    private static void extractSwaggerInfo(PsiMethod method, ControllerInfo controllerInfo) {
+        PsiModifierList methodModifierList = method.getModifierList();
+        PsiAnnotation swaggerAnnotation = methodModifierList.findAnnotation("io.swagger.annotations.ApiOperation");
+        if (swaggerAnnotation != null) {
+            extractSwaggerValue(swaggerAnnotation, "value", controllerInfo::setSwaggerInfo);
+            extractSwaggerValue(swaggerAnnotation, "notes", controllerInfo::setSwaggerNotes);
+        }
+    }
 
-                        // 提取Swagger注解信息
-                        PsiModifierList methodModifierList = method.getModifierList();
-                        PsiAnnotation swaggerAnnotation = methodModifierList.findAnnotation("io.swagger.annotations.ApiOperation");
-                        if (swaggerAnnotation != null) {
-                            PsiAnnotationMemberValue swaggerValue = swaggerAnnotation.findAttributeValue("value");
-                            if (swaggerValue instanceof PsiLiteralExpression) {
-                                Object swaggerAnnotationValue = ((PsiLiteralExpression) swaggerValue).getValue();
-                                if (swaggerAnnotationValue instanceof String) {
-                                    controllerInfo.setSwaggerInfo((String) swaggerAnnotationValue);
-                                }
-                                PsiAnnotationMemberValue swaggerNotes = swaggerAnnotation.findAttributeValue("notes");
-                                if (swaggerNotes instanceof PsiLiteralExpression) {
-                                    Object swaggerNotesValue = ((PsiLiteralExpression) swaggerNotes).getValue();
-                                    if (swaggerNotesValue instanceof String) {
-                                        controllerInfo.setSwaggerNotes((String) swaggerNotesValue);
-                                    }
-                                }
-                            }
-                        }
-
-                        return controllerInfo;
-                    }
-                }
+    private static void extractSwaggerValue(PsiAnnotation swaggerAnnotation, String attributeName, Consumer<String> setter) {
+        PsiAnnotationMemberValue attributeValue = swaggerAnnotation.findAttributeValue(attributeName);
+        if (attributeValue instanceof PsiLiteralExpression) {
+            Object value = ((PsiLiteralExpression) attributeValue).getValue();
+            if (value instanceof String) {
+                setter.accept((String) value);
             }
         }
-        return controllerInfo;
     }
 
     public static String showResult(List<ControllerInfo> controllerInfos) {
@@ -203,11 +195,10 @@ public class JavaSourceFileUtil {
      */
     public static ControllerInfo extractControllerInfo(String parentPath, PsiMethod method) {
         ControllerInfo controllerInfo = new ControllerInfo();
+        controllerInfo.setPath(parentPath);
         PsiAnnotation[] annotations = method.getAnnotations();
         for (PsiAnnotation annotation : annotations) {
             String annotationName = annotation.getQualifiedName();
-            PsiAnnotationParameterList parameterList = annotation.getParameterList();
-            PsiNameValuePair[] attributes = parameterList.getAttributes();
             // 处理 @RequestMapping 注解
             if (annotationName != null && annotationName.equals(REQUEST_MAPPING.getQualifiedName())) {
                 controllerInfo.setRequestMethod("REQUEST");
@@ -221,13 +212,12 @@ public class JavaSourceFileUtil {
                         controllerInfo.setRequestMethod(getRequestMethodFromMethodName(methodName));
                     }
                 }
-                return JavaSourceFileUtil.getValue(attributes, controllerInfo, parentPath, method);
             } else if (SpringRequestMethodAnnotation.getByQualifiedName(annotationName) != null) {
                 // 处理其他常用注解
                 SpringRequestMethodAnnotation requestMethod = SpringRequestMethodAnnotation.getByQualifiedName(annotationName);
                 controllerInfo.setRequestMethod(requestMethod !=null? requestMethod.methodName(): "REQUEST");
-                return JavaSourceFileUtil.getValue(attributes, controllerInfo, parentPath, method);
             }
+            return JavaSourceFileUtil.getValue(annotation, controllerInfo, method);
         }
         return null;
     }
