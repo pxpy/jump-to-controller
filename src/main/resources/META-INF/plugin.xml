@@ -41,12 +41,6 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
         ]]>
     </change-notes>
     <actions>
-        <!-- 在此处添加你的Action -->
-<!--        <group id="me.panxin.plugin.idea.jumpcontroller.action" class="me.panxin.plugin.idea.jumpcontroller.action.MainActionGroup" text="JumpToController"-->
-<!--               popup="true">-->
-<!--            &lt;!&ndash;生成代码菜单&ndash;&gt;-->
-<!--            <add-to-group group-id="ToolsMenu" anchor="first"/>-->
-<!--        </group>-->
         <group id="JumpToController" text="JumpToController" description="JumpToController" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
             <action class="me.panxin.plugin.idea.jumpcontroller.action.ScanControllerAction"

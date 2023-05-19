@@ -77,10 +77,16 @@ public class Feign2ControllerLineMarkerProvider extends RelatedItemLineMarkerPro
     }
     private boolean isElementWithinInterface(PsiElement element) {
         if (element instanceof PsiClass && ((PsiClass) element).isInterface()) {
-            return true;
+            PsiClass psiClass = (PsiClass) element;
+
+            // 检查类上是否存在 FeignClient 注解
+            PsiAnnotation feignAnnotation = psiClass.getAnnotation("org.springframework.cloud.openfeign.FeignClient");
+            if (feignAnnotation != null) {
+                return true;
+            }
         }
         PsiClass type = PsiTreeUtil.getParentOfType(element, PsiClass.class);
-        return type != null && type.isInterface();
+        return type != null && isElementWithinInterface(type);
     }
 }
 

@@ -14,6 +14,8 @@ import java.util.Map;
  */
 public class MyCacheManager {
 
+    private MyCacheManager(){}
+
     // 缓存数据使用
     private static Map<String, List<Pair<String, ControllerInfo>>> projectCacheMap = new HashMap<>();
 

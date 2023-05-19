@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
+import me.panxin.plugin.idea.jumpcontroller.util.CustomDialog;
 import me.panxin.plugin.idea.jumpcontroller.util.JavaSourceFileUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +31,7 @@ public class ScanControllerAction extends AnAction {
         showControllerInfo(controllerInfos);
     }
     private void showControllerInfo(List<ControllerInfo> controllerInfos) {
-
-        Messages.showMessageDialog(JavaSourceFileUtil.showResult(controllerInfos), "接口信息 "+ controllerInfos.size()+"条", Messages.getInformationIcon());
+        CustomDialog dialog = new CustomDialog(controllerInfos);
+        dialog.show();
     }
 }
