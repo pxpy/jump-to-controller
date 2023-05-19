@@ -101,15 +101,19 @@ public class JavaSourceFileUtil {
     public static String showResult(List<ControllerInfo> controllerInfos){
         StringBuilder message = new StringBuilder();
         // 表头信息
-        int requestColumnWidth = 5;  // 列宽度：Path
+        int i=0;
+        int numWidth = 2;  // 列宽度：序号
+        int requestColumnWidth = 5;  // 列宽度：请求方法
         int pathColumnWidth = 52;  // 列宽度：Path
-        int swaggerInfoColumnWidth = 15;  // 列宽度：Swagger Info
-        int swaggerNotesColumnWidth = 10;  // 列宽度：Swagger Notes
+        int swaggerInfoColumnWidth = 25;  // 列宽度：Swagger Info
+        int swaggerNotesColumnWidth = 25;  // 列宽度：Swagger Notes
+        message.append(String.format("%-" + numWidth + "s", "Num")).append("\t");
         message.append(String.format("%-" + requestColumnWidth + "s", "Request")).append("\t");
         message.append(String.format("%-" + pathColumnWidth + "s", "Path")).append("\t");
         message.append(String.format("%-" + swaggerInfoColumnWidth + "s", "Swagger Info")).append("\t");
         message.append(String.format("%-" + swaggerNotesColumnWidth + "s", "Swagger Notes")).append("\n");
         for (ControllerInfo info : controllerInfos) {
+            message.append(String.format("%-" + numWidth + "s", ++i)).append("\t");
             message.append(String.format("%-" + requestColumnWidth + "s", info.getRequestMethod())).append("\t");
             // 接口路径
             message.append(String.format("%-" + pathColumnWidth + "s", info.getPath())).append("\t");

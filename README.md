@@ -4,5 +4,5 @@ Spring Controller Explorer是一款强大的IntelliJ IDEA插件，旨在帮助�
 除了路径的展示和搜索，Spring Controller Explorer还支持Feign调用的集成。当你在Feign接口上点击插件提供的图标时，它会智能地跳转到对应的Controller代码，让你更方便地理解和调试整个请求流程。
 Spring Controller Explorer拥有直观友好的用户界面，高效准确的路径扫描和搜索功能，帮助开发人员在Spring项目中更加高效地探索和管理Controller接口。无论是快速查找路径、搜索注释还是跳转到对应代码，这个插件都能让你的开发工作更加便捷和高效。
 使用方法
-1. 菜单栏tools-POJO Check，可在项目根目录输出报告，默认快捷键Ctrl+Shift+9，可以自行配置
-2. 在idea底部Problems会自动检测并提示当前文件是否存在问题
+1. 菜单栏tools-JumpToController
+2. 按快捷键Ctrl+Win 进入搜索

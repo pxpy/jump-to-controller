@@ -33,10 +33,4 @@ public class ScanControllerAction extends AnAction {
 
         Messages.showMessageDialog(JavaSourceFileUtil.showResult(controllerInfos), "接口信息 "+ controllerInfos.size()+"条", Messages.getInformationIcon());
     }
-    // 添加辅助方法isMatched：
-    private boolean isMatched(ControllerInfo controllerInfo, String searchText) {
-        return controllerInfo.getPath().contains(searchText) ||
-                (controllerInfo.getSwaggerInfo() != null && controllerInfo.getSwaggerInfo().contains(searchText)) ||
-                (controllerInfo.getSwaggerNotes() != null && controllerInfo.getSwaggerNotes().contains(searchText));
-    }
 }

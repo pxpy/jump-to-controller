@@ -13,6 +13,7 @@ import com.intellij.psi.util.PsiUtilBase;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
 import me.panxin.plugin.idea.jumpcontroller.util.JavaSourceFileUtil;
 import me.panxin.plugin.idea.jumpcontroller.util.MyCacheManager;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,10 +54,12 @@ public class SearchControllerAction extends AnAction {
         searchFrame.setSize(1000, 400);
 
         JTextArea resultTextArea = new JTextArea();
+        resultTextArea.setText(" 按回车跳转第一个接口\n 可以通过空格+数字传递行数，例如：\n /user/list 2\n 快捷键Ctrl + Win");
         resultTextArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(resultTextArea);
 
         JTextField searchField = new JTextField();
+        searchField.setToolTipText("按回车跳转");
         searchField.setEditable(true); // 启用编辑功能
         searchField.setTransferHandler(new TextFieldTransferHandler()); // 设置默认的传输处理程序
         searchField.setPreferredSize(new Dimension(300, 30));
@@ -78,7 +81,7 @@ public class SearchControllerAction extends AnAction {
 
             private void performSearch() {
                 String searchText = searchField.getText().strip();
-                List<ControllerInfo> searchResults = searchControllerInfos(controllerInfos, searchText);
+                List<ControllerInfo> searchResults = searchControllerInfos(controllerInfos, searchText.split(" ")[0]);
                 showControllerInfo(searchResults, resultTextArea);
             }
         });
@@ -87,7 +90,7 @@ public class SearchControllerAction extends AnAction {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    navigateToFirstControllerCode(controllerInfos, searchField.getText());
+                    navigateToFirstControllerCode(controllerInfos, searchField.getText().strip());
                 }
             }
         });
@@ -128,6 +131,7 @@ public class SearchControllerAction extends AnAction {
 
     private void showControllerInfo(List<ControllerInfo> controllerInfos, JTextArea resultTextArea) {
         resultTextArea.setText(JavaSourceFileUtil.showResult(controllerInfos));
+        resultTextArea.setCaretPosition(0);
     }
 
 
@@ -145,10 +149,18 @@ public class SearchControllerAction extends AnAction {
                 .collect(Collectors.toList());
     }
     private void navigateToFirstControllerCode(List<ControllerInfo> controllerInfos, String searchText) {
-        List<ControllerInfo> searchResults = searchControllerInfos(controllerInfos, searchText);
-        if (!searchResults.isEmpty()) {
-            ControllerInfo firstResult = searchResults.get(0);
-            navigateToControllerCode(firstResult);
+        List<ControllerInfo> searchResults = null;
+        int i = 0;
+        String[] s = searchText.split(" ");
+        if(s.length == 1){
+            searchResults = searchControllerInfos(controllerInfos, searchText);
+        }else if(s.length == 2){
+            searchResults = searchControllerInfos(controllerInfos, s[0]);
+            i = Integer.parseInt(s[1])-1;
+        }
+        if (CollectionUtils.isNotEmpty(searchResults)) {
+            ControllerInfo iResult = searchResults.get(i);
+            navigateToControllerCode(iResult);
         }
     }
     private void navigateToControllerCode(ControllerInfo controllerInfo) {
@@ -174,9 +186,20 @@ public class SearchControllerAction extends AnAction {
     }
     // 添加辅助方法isMatched：
     private boolean isMatched(ControllerInfo controllerInfo, String searchText) {
-        return controllerInfo.getPath().contains(searchText) ||
-                (controllerInfo.getSwaggerInfo() != null && controllerInfo.getSwaggerInfo().contains(searchText)) ||
-                (controllerInfo.getSwaggerNotes() != null && controllerInfo.getSwaggerNotes().contains(searchText));
+        String lowerCase = searchText.toLowerCase();
+        if(controllerInfo.getRequestMethod().toLowerCase().contains(lowerCase)){
+            return true;
+        }
+        if(controllerInfo.getPath().toLowerCase().contains(lowerCase)){
+            return true;
+        }
+        if(controllerInfo.getSwaggerInfo() != null && controllerInfo.getSwaggerInfo().toLowerCase().contains(lowerCase)){
+            return true;
+        }
+        if(controllerInfo.getSwaggerNotes() != null && controllerInfo.getSwaggerNotes().toLowerCase().contains(lowerCase)){
+            return true;
+        }
+        return false;
     }
 
 }

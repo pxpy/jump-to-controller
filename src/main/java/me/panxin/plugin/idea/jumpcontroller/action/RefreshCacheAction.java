@@ -3,6 +3,7 @@ package me.panxin.plugin.idea.jumpcontroller.action;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import me.panxin.plugin.idea.jumpcontroller.util.JavaSourceFileUtil;
 import me.panxin.plugin.idea.jumpcontroller.util.MyCacheManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,5 +21,7 @@ public class RefreshCacheAction extends AnAction {
             return;
         }
         MyCacheManager.setCacheData(project, null);
+        // 扫描项目中的Java源文件
+       JavaSourceFileUtil.scanControllerPaths(project);
     }
 }
