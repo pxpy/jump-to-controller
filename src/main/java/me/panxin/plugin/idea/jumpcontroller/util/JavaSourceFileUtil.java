@@ -181,7 +181,7 @@ public class JavaSourceFileUtil {
         }
         return false;
     }
-    private static ControllerInfo extractControllerInfo(String parentPath, PsiMethod method) {
+    public static ControllerInfo extractControllerInfo(String parentPath, PsiMethod method) {
         ControllerInfo controllerInfo = new ControllerInfo();
         PsiAnnotation[] annotations = method.getAnnotations();
         for (PsiAnnotation annotation : annotations) {

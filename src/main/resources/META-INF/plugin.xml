@@ -31,17 +31,8 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-<!--        <localInspection-->
-<!--                language="JAVA"-->
-<!--                implementationClass="me.panxin.plugin.idea.jumpcontroller.inspection.ToStringMethodInspection"-->
-<!--                displayName="Missing toString Method"-->
-<!--                groupPath="Java"-->
-<!--                enabledByDefault="true"-->
-<!--                groupName="POJO Check"/>-->
-<!--        <configurableProviders>-->
-<!--            <provider implementation="com.example.ControllerPathCollectorSettingsProvider"/>-->
-<!--        </configurableProviders>-->
-<!--        <iconProvider implementation="com.example.FeignIconProvider"/>-->
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="me.panxin.plugin.idea.jumpcontroller.provider.Feign2ControllerLineMarkerProvider"/>
     </extensions>
 
     <change-notes>
@@ -67,7 +58,7 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
                     text="Search"
                     description="搜索项目接口"
             >
-                <keyboard-shortcut first-keystroke="control windows" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="control meta"  keymap="$default"/>
             </action>
             <action class="me.panxin.plugin.idea.jumpcontroller.action.RefreshCacheAction"
                     text="refresh"
