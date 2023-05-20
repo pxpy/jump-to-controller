@@ -52,5 +52,7 @@ tasks {
     publishPlugin {
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
-
+    runIde {
+        jvmArgs("-Xmx4096m","-XX:ReservedCodeCacheSize=512m","-Xms128m")
+    }
 }
