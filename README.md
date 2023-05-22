@@ -6,3 +6,4 @@ Spring Controller Explorer拥有直观友好的用户界面，高效准确的路
 使用方法
 1. 菜单栏tools-JumpToController
 2. 项目下如果能找到和feign调用对应的controller，方法左侧会出现和插件logo一样的图标，点击即可跳转
+   ![demo](https://cdn.staticaly.com/gh/pxpy/img@master/demo.2ha2tvt8xh40.gif)
