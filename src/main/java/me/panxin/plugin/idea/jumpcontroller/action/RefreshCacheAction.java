@@ -15,13 +15,8 @@ public class RefreshCacheAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        // 获取当前项目
-        Project project = event.getProject();
-        if (project == null) {
-            return;
-        }
-        MyCacheManager.setCacheData(project, null);
+        JavaSourceFileUtil.clear();
         // 扫描项目中的Java源文件
-       JavaSourceFileUtil.scanControllerPaths(project);
+       JavaSourceFileUtil.scanAllProjectControllerInfo();
     }
 }

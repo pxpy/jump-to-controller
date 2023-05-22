@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ScrollType;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
@@ -12,9 +11,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiUtilBase;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
 import me.panxin.plugin.idea.jumpcontroller.util.JavaSourceFileUtil;
-import me.panxin.plugin.idea.jumpcontroller.util.MyCacheManager;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -34,17 +31,11 @@ import java.util.stream.Collectors;
  */
 public class SearchControllerAction extends AnAction {
 
-    private Project project;
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        // 获取当前项目
-        project = event.getProject();
-        if (project == null) {
-            return;
-        }
+
         // 扫描项目中的Java源文件
-        List<ControllerInfo> controllerInfos = JavaSourceFileUtil.scanControllerPaths(project);
+        List<ControllerInfo> controllerInfos = JavaSourceFileUtil.scanAllProjectControllerInfo();
         // 执行搜索
         startSearch(controllerInfos);
     }
@@ -54,7 +45,7 @@ public class SearchControllerAction extends AnAction {
         searchFrame.setSize(1000, 400);
 
         JTextArea resultTextArea = new JTextArea();
-        resultTextArea.setText(" 按回车跳转第一个接口\n 可以通过空格+数字传递行数，例如：\n /user/list 2\n 快捷键Ctrl + Win");
+        resultTextArea.setText(" 按回车跳转第一个接口\n 可以通过空格+数字传递行数，例如：\n /user/list 2\n 可以自定义快捷键");
         resultTextArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(resultTextArea);
 
@@ -136,16 +127,8 @@ public class SearchControllerAction extends AnAction {
 
 
     private List<ControllerInfo> searchControllerInfos(List<ControllerInfo> controllerInfos, String searchText) {
-        List<Pair<String, ControllerInfo>> cachedControllerInfos = MyCacheManager.getCacheData(project);
-        if (cachedControllerInfos.isEmpty()) {
-            return controllerInfos.stream()
-                    .filter(info -> isMatched(info, searchText))
-                    .collect(Collectors.toList());
-        }
-
-        return cachedControllerInfos.stream()
-                .filter(pair -> isMatched(pair.getRight(), searchText))
-                .map(Pair::getRight)
+        return controllerInfos.stream()
+                .filter(info -> isMatched(info, searchText))
                 .collect(Collectors.toList());
     }
     private void navigateToFirstControllerCode(List<ControllerInfo> controllerInfos, String searchText) {

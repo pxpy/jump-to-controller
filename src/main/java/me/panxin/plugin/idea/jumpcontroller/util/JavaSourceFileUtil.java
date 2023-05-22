@@ -2,6 +2,7 @@ package me.panxin.plugin.idea.jumpcontroller.util;
 
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
@@ -13,7 +14,9 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringRequestMethodAnnotation.REQUEST_MAPPING;
+import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringControllerClassAnnotation.CONTROLLER;
+import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringControllerClassAnnotation.RESTCONTROLLER;
+import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringRequestMethodAnnotation.*;
 
 /**
  * @author PanXin
@@ -22,6 +25,31 @@ import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringRequestMethod
 public class JavaSourceFileUtil {
 
     private JavaSourceFileUtil(){};
+
+    /**
+     * 获取所有打开的项目列表
+     *
+     * @return {@link Project[]}
+     */
+    private static Project[] getOpenProjects() {
+        // 获取ProjectManager实例
+        ProjectManager projectManager = ProjectManager.getInstance();
+        // 获取所有打开的项目列表
+        return projectManager.getOpenProjects();
+    }
+    public static void clear() {
+        Project[] openProjects = getOpenProjects();
+        for (Project project : openProjects) {
+            // 扫描项目中的Java源文件
+            MyCacheManager.setCacheData(project,null);
+        }
+    }
+    public static List<ControllerInfo> scanAllProjectControllerInfo() {
+        Project[] openProjects = getOpenProjects();
+        return Arrays.stream(openProjects)
+                .flatMap(project -> JavaSourceFileUtil.scanControllerPaths(project).stream())
+                .collect(Collectors.toList());
+    }
 
     public static List<ControllerInfo> scanControllerPaths(Project project) {
         PsiManager psiManager = PsiManager.getInstance(project);
@@ -41,12 +69,12 @@ public class JavaSourceFileUtil {
         List<ControllerInfo> controllerInfos = new ArrayList<>();
 
         // 获取项目中的所有Java源文件
-        List<PsiClass> javaFiles = JavaSourceFileUtil.getAllClasses(rootPackage, searchScope);
+        List<PsiClass> javaFiles = getAllClasses(rootPackage, searchScope);
 
         for (PsiClass psiClass : javaFiles) {
             // 判断类是否带有@Controller或@RestController注解
             if (isControllerClass(psiClass)) {
-                String parentPath = JavaSourceFileUtil.extractControllerPath(psiClass);
+                String parentPath = extractControllerPath(psiClass);
                 // 解析类中的方法，提取接口路径和Swagger注解信息
                 PsiMethod[] methods = psiClass.getMethods();
                 for (PsiMethod method : methods) {
@@ -113,8 +141,8 @@ public class JavaSourceFileUtil {
         PsiAnnotation[] annotations = psiClass.getAnnotations();
         for (PsiAnnotation annotation : annotations) {
             String annotationName = annotation.getQualifiedName();
-            if (annotationName != null && (annotationName.equals("org.springframework.stereotype.Controller")
-                    || annotationName.equals("org.springframework.web.bind.annotation.RestController"))) {
+            if (annotationName != null && (annotationName.equals(CONTROLLER.getQualifiedName())
+                    || annotationName.equals(RESTCONTROLLER.getQualifiedName()))) {
                 return true;
             }
         }
@@ -147,12 +175,12 @@ public class JavaSourceFileUtil {
                         controllerInfo.setRequestMethod(getRequestMethodFromMethodName(methodName));
                     }
                 }
-                return JavaSourceFileUtil.getValue(annotation, controllerInfo, method);
+                return getValue(annotation, controllerInfo, method);
             } else if (SpringRequestMethodAnnotation.getByQualifiedName(annotationName) != null) {
                 // 处理其他常用注解
                 SpringRequestMethodAnnotation requestMethod = SpringRequestMethodAnnotation.getByQualifiedName(annotationName);
                 controllerInfo.setRequestMethod(requestMethod !=null? requestMethod.methodName(): "REQUEST");
-                return JavaSourceFileUtil.getValue(annotation, controllerInfo, method);
+                return getValue(annotation, controllerInfo, method);
             }
 
         }

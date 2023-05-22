@@ -19,6 +19,9 @@ public class MyCacheManager {
     // 缓存数据使用
     private static Map<String, List<Pair<String, ControllerInfo>>> projectCacheMap = new HashMap<>();
 
+    public static void clear(){
+        projectCacheMap = null;
+    }
     public static List<Pair<String, ControllerInfo>> getCacheData(Project project) {
         String projectId = project.getBasePath(); // 以项目路径作为唯一标识符
         return projectCacheMap.get(projectId);

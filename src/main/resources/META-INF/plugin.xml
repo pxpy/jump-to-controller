@@ -52,7 +52,7 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
                     text="Search"
                     description="搜索项目接口"
             >
-                <keyboard-shortcut first-keystroke="control meta"  keymap="$default"/>
+                <keyboard-shortcut first-keystroke="control shift J"  keymap="$default"/>
             </action>
             <action class="me.panxin.plugin.idea.jumpcontroller.action.RefreshCacheAction"
                     text="refresh"
@@ -61,5 +61,4 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
             </action>
         </group>
     </actions>
-
 </idea-plugin>

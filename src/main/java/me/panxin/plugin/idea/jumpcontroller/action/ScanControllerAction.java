@@ -2,8 +2,6 @@ package me.panxin.plugin.idea.jumpcontroller.action;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
 import me.panxin.plugin.idea.jumpcontroller.util.CustomDialog;
 import me.panxin.plugin.idea.jumpcontroller.util.JavaSourceFileUtil;
@@ -19,16 +17,9 @@ public class ScanControllerAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        // 获取当前项目
-        Project project = event.getProject();
-        if (project == null) {
-            return;
-        }
-        // 扫描项目中的Java源文件
-        List<ControllerInfo> controllerInfos = JavaSourceFileUtil.scanControllerPaths(project);
-
-        // 在插件界面展示接口路径和Swagger注解信息
+        List<ControllerInfo> controllerInfos = JavaSourceFileUtil.scanAllProjectControllerInfo();
         showControllerInfo(controllerInfos);
+
     }
     private void showControllerInfo(List<ControllerInfo> controllerInfos) {
         CustomDialog dialog = new CustomDialog(controllerInfos);
