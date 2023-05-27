@@ -40,6 +40,7 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
     <change-notes>
         <![CDATA[
       1.0.0 project init<br>
+      1.1.0 add controller to feign<br>
         ]]>
     </change-notes>
     <actions>
