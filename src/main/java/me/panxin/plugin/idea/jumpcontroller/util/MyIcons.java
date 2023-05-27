@@ -10,5 +10,6 @@ import javax.swing.*;
  */
 public interface MyIcons {
     Icon STATEMENT_LINE_FEIGN_ICON = IconLoader.getIcon("/images/feign_method", MyIcons.class);
+    Icon STATEMENT_LINE_CONTROLLER_ICON = IconLoader.getIcon("/images/controller_method", MyIcons.class);
 }
 

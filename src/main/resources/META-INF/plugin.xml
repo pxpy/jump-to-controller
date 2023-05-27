@@ -33,6 +33,8 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="me.panxin.plugin.idea.jumpcontroller.provider.Feign2ControllerLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="me.panxin.plugin.idea.jumpcontroller.provider.Controller2FeignLineMarkerProvider"/>
     </extensions>
 
     <change-notes>

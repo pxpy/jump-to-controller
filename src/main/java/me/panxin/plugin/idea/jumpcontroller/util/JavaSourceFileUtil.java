@@ -5,9 +5,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiTreeUtil;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
 import me.panxin.plugin.idea.jumpcontroller.enumclass.SpringRequestMethodAnnotation;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -137,7 +139,7 @@ public class JavaSourceFileUtil {
 
 
 
-    private static boolean isControllerClass(PsiClass psiClass) {
+    public static boolean isControllerClass(PsiClass psiClass) {
         PsiAnnotation[] annotations = psiClass.getAnnotations();
         for (PsiAnnotation annotation : annotations) {
             String annotationName = annotation.getQualifiedName();
@@ -265,4 +267,120 @@ public class JavaSourceFileUtil {
         methodMappings.put("DELETE", "DELETE");
         return methodMappings.getOrDefault(methodName, "REQUEST");
     }
+
+    /**
+     * 目前只能跳转到当前项目下的文件否则会报Element from alien project错误
+     *
+     * @param psiMethod psi方法
+     * @return {@link List}<{@link PsiElement}>
+     */
+    public static List<PsiElement> process(PsiMethod psiMethod) {
+        List<PsiElement> elementList = new ArrayList<>();
+
+        // 获取当前项目
+        Project project = psiMethod.getProject();
+
+        List<ControllerInfo> controllerInfos = JavaSourceFileUtil.scanControllerPaths(project);
+
+        if (controllerInfos != null) {
+            // 遍历 Controller 类的所有方法
+            for (ControllerInfo controllerInfo : controllerInfos) {
+                if (isMethodMatch(controllerInfo, psiMethod)) {
+                    elementList.add(controllerInfo.getMethod());
+                }
+            }
+        }
+
+        return elementList;
+    }
+
+    private static boolean isMethodMatch(ControllerInfo controllerInfo, PsiMethod feignMethod) {
+        ControllerInfo feignInfo = JavaSourceFileUtil.extractControllerInfo("", feignMethod);
+        if(feignInfo != null){
+            String path = feignInfo.getPath();
+            if(StringUtils.isNotBlank(path)){
+                return path.equals(controllerInfo.getPath());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 元素是否为FeignClient下的方法
+     *
+     * @param element 元素
+     * @return boolean
+     */
+    public static boolean isElementWithinInterface(PsiElement element) {
+        if (element instanceof PsiClass && ((PsiClass) element).isInterface()) {
+            PsiClass psiClass = (PsiClass) element;
+
+            // 检查类上是否存在 FeignClient 注解
+            PsiAnnotation feignAnnotation = psiClass.getAnnotation("org.springframework.cloud.openfeign.FeignClient");
+            if (feignAnnotation != null) {
+                return true;
+            }
+        }
+        PsiClass type = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        return type != null && isElementWithinInterface(type);
+    }
+
+
+    /**
+     * 扫描Feign接口信息添加到缓存里面
+     *
+     * @param project 项目
+     * @return {@link List}<{@link ControllerInfo}>
+     */
+    public static List<ControllerInfo> scanFeignInterfaces(Project project) {
+        PsiManager psiManager = PsiManager.getInstance(project);
+        GlobalSearchScope searchScope = GlobalSearchScope.projectScope(project);
+        PsiPackage rootPackage = JavaPsiFacade.getInstance(psiManager.getProject()).findPackage("");
+
+        // 检查是否在 Dumb 模式下，以避免在项目构建期间执行代码
+        if (DumbService.isDumb(project)) {
+            return Collections.emptyList();
+        }
+
+        List<Pair<String, ControllerInfo>> feignCacheData = MyCacheManager.getFeignCacheData(project);
+        if (CollectionUtils.isNotEmpty(feignCacheData)) {
+            return feignCacheData.stream()
+                    .map(Pair::getRight)
+                    .collect(Collectors.toList());
+        }
+        feignCacheData = new ArrayList<>();
+        List<ControllerInfo> feignInfos = new ArrayList<>();
+        // 获取项目中的所有Java源文件
+        List<PsiClass> javaFiles = getAllClasses(rootPackage, searchScope);
+        for (PsiClass psiClass : javaFiles) {
+            // 判断类是否带有@FeignClient注解
+            if (isFeignInterface(psiClass)) {
+                // 解析类中的方法，提取接口路径
+                PsiMethod[] methods = psiClass.getMethods();
+                for (PsiMethod method : methods) {
+                    ControllerInfo feignInfo = extractControllerInfo("", method);
+                    if (feignInfo != null) {
+                        // 设置方法信息
+                        feignInfo.setMethod(method);
+                        feignInfos.add(feignInfo);
+                    }
+                }
+            }
+        }
+
+        // 将结果添加到缓存中
+        feignCacheData.addAll(feignInfos.stream()
+                .map(info -> Pair.of(info.getPath(), info))
+                .collect(Collectors.toList()));
+        MyCacheManager.setFeignCacheData(project, feignCacheData);
+
+        return feignInfos;
+    }
+    // 判断类是否带有@FeignClient注解
+    private static boolean isFeignInterface(PsiClass psiClass) {
+        PsiAnnotation annotation = psiClass.getAnnotation("org.springframework.cloud.openfeign.FeignClient");
+        return annotation != null;
+    }
+
+
 }
