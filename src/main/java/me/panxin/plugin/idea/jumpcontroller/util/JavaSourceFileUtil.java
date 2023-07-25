@@ -12,6 +12,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.swing.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -383,4 +387,42 @@ public class JavaSourceFileUtil {
     }
 
 
+    public static void exportToCSV(List<ControllerInfo> controllerInfos) {
+        // 获取文件选择器
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setDialogTitle("导出列表");
+
+        // 显示文件选择器
+        int result = fileChooser.showSaveDialog(null);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        // 获取文件
+        File file = fileChooser.getSelectedFile();
+
+        // 创建 CSV 文件写入器
+        try (FileWriter fileWriter = new FileWriter(file.getAbsolutePath() + ".csv")) {
+            // 写入列头
+            String[] columnNames = {"序号", "请求方法", "路径", "Swagger Info", "Swagger Notes"};
+            fileWriter.write(String.join(",", columnNames) + "\n");
+
+            // 写入列表数据
+            Integer i = 0;
+            for (ControllerInfo controllerInfo : controllerInfos) {
+                i++;
+                String[] data = {
+                        i.toString(),
+                        controllerInfo.getRequestMethod(),
+                        controllerInfo.getPath(),
+                        controllerInfo.getSwaggerInfo(),
+                        controllerInfo.getSwaggerNotes()
+                };
+                fileWriter.write(String.join(",", data) + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

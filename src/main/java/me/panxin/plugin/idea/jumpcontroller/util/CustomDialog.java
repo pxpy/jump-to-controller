@@ -39,6 +39,15 @@ public class CustomDialog extends DialogWrapper {
         JScrollPane scrollPane = new JScrollPane(textArea);
         panel.add(scrollPane, BorderLayout.CENTER);
 
+        // 添加导出列表按钮
+        JButton exportButton = new JButton("导出列表");
+        exportButton.addActionListener(e -> {
+            // 将列表导出到 CSV 文件
+            JavaSourceFileUtil.exportToCSV(controllerInfos);
+        });
+
+        panel.add(exportButton, BorderLayout.SOUTH);
+
         return panel;
     }
 
