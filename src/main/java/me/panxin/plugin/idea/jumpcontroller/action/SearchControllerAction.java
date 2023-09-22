@@ -8,6 +8,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.util.PsiEditorUtil;
 import com.intellij.psi.util.PsiUtilBase;
 import me.panxin.plugin.idea.jumpcontroller.ControllerInfo;
 import me.panxin.plugin.idea.jumpcontroller.util.JavaSourceFileUtil;
@@ -164,7 +165,7 @@ public class SearchControllerAction extends AnAction {
                 PsiMethod targetMethod = controllerInfo.getMethod();
                 if (targetMethod != null) {
                     int offset = targetMethod.getTextOffset();
-                    Editor editor = PsiUtilBase.findEditor(file);
+                    Editor editor = PsiEditorUtil.findEditor(file);
                     if (editor != null) {
                         editor.getCaretModel().moveToOffset(offset);
                         editor.getScrollingModel().scrollToCaret(ScrollType.CENTER_UP);
