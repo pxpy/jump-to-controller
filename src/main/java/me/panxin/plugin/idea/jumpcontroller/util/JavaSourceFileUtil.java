@@ -30,6 +30,8 @@ import static me.panxin.plugin.idea.jumpcontroller.enumclass.SpringRequestMethod
  */
 public class JavaSourceFileUtil {
 
+    private static List<ControllerInfo> controllerInfos = new ArrayList<ControllerInfo>();
+
     private JavaSourceFileUtil(){};
 
     /**
@@ -50,11 +52,17 @@ public class JavaSourceFileUtil {
             MyCacheManager.setCacheData(project,null);
         }
     }
+
+    public static List<ControllerInfo>  getControllerInfos(){
+        return controllerInfos;
+    }
     public static List<ControllerInfo> scanAllProjectControllerInfo() {
         Project[] openProjects = getOpenProjects();
-        return Arrays.stream(openProjects)
+        List<ControllerInfo> collect = Arrays.stream(openProjects)
                 .flatMap(project -> JavaSourceFileUtil.scanControllerPaths(project).stream())
                 .collect(Collectors.toList());
+        controllerInfos = collect;
+        return collect;
     }
 
     public static List<ControllerInfo> scanControllerPaths(Project project) {

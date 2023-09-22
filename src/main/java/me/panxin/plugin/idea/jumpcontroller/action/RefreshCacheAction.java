@@ -19,4 +19,10 @@ public class RefreshCacheAction extends AnAction {
         // 扫描项目中的Java源文件
        JavaSourceFileUtil.scanAllProjectControllerInfo();
     }
+
+    public void refresh(){
+        JavaSourceFileUtil.clear();
+        // 扫描项目中的Java源文件
+        JavaSourceFileUtil.scanAllProjectControllerInfo();
+    }
 }
