@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class SearchControllerAction extends AnAction {
 
     //仅弹出一个窗口
-    private final JFrame searchFrame = new JFrame("搜索");
+    private JFrame searchFrame = null;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
@@ -43,6 +43,10 @@ public class SearchControllerAction extends AnAction {
         startSearch(controllerInfos);
     }
     private void startSearch(List<ControllerInfo> controllerInfos) {
+        if(searchFrame == null){
+            searchFrame = new JFrame("搜索");
+        }
+//        JFrame searchFrame = new JFrame("搜索");
         searchFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         searchFrame.setSize(1000, 400);
 
