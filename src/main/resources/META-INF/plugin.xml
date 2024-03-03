@@ -35,6 +35,8 @@ With its user-friendly interface, efficient path scanning, and comprehensive sea
                                         implementationClass="me.panxin.plugin.idea.jumpcontroller.provider.Feign2ControllerLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="me.panxin.plugin.idea.jumpcontroller.provider.Controller2FeignLineMarkerProvider"/>
+        <toolWindow id="JumpToController" secondary="false" icon="AllIcons.Toolwindows.WebToolWindow" anchor="bottom"
+                    factoryClass="me.panxin.plugin.idea.jumpcontroller.toolwindow.SearchToolWindowFactory"/>
     </extensions>
 
     <change-notes>
