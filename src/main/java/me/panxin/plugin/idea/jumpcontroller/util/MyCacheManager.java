@@ -40,9 +40,9 @@ public class MyCacheManager {
         return projectCacheMap.get(projectId);
     }
 
-    public static void setCacheData(Project project, List<Pair<String, ControllerInfo>> feignCacheData) {
+    public static void setCacheData(Project project, List<Pair<String, ControllerInfo>> controllerCacheData) {
         String projectId = project.getBasePath(); // 以项目路径作为唯一标识符
-        projectCacheMap.put(projectId, feignCacheData);
+        projectCacheMap.put(projectId, controllerCacheData);
     }
 
     public static List<Pair<String, ControllerInfo>> getFeignCacheData(Project project) {
@@ -65,11 +65,7 @@ public class MyCacheManager {
                     .map(Pair::getRight)
                     .collect(Collectors.toMap(controllerInfo -> getKey(controllerInfo.getMethod()),
                             ControllerInfo::getPath,
-                            (a1, a2) -> {
-                                System.out.println(a1);
-                                System.out.println(a2);
-                                return a1;
-                            })
+                            (a1, a2) -> a1)
                     );
             projectControllerCacheMap.put(basePath, collect);
         }

@@ -48,6 +48,7 @@ public class JavaSourceFileUtil {
         for (Project project : openProjects) {
             // 扫描项目中的Java源文件
             MyCacheManager.setCacheData(project,null);
+            MyCacheManager.setFeignCacheData(project,null);
         }
     }
     public static List<ControllerInfo> scanAllProjectControllerInfo() {
@@ -56,6 +57,14 @@ public class JavaSourceFileUtil {
                 .flatMap(project -> JavaSourceFileUtil.scanControllerPaths(project).stream())
                 .collect(Collectors.toList());
     }
+
+    public static List<ControllerInfo> scanAllProjectFeignInfo() {
+        Project[] openProjects = getOpenProjects();
+        return Arrays.stream(openProjects)
+                .flatMap(project -> JavaSourceFileUtil.scanFeignInterfaces(project).stream())
+                .collect(Collectors.toList());
+    }
+
 
     public static List<ControllerInfo> scanControllerPaths(Project project) {
         PsiManager psiManager = PsiManager.getInstance(project);
@@ -299,7 +308,8 @@ public class JavaSourceFileUtil {
     }
 
     private static boolean isMethodMatch(ControllerInfo controllerInfo, PsiMethod feignMethod) {
-        ControllerInfo feignInfo = JavaSourceFileUtil.extractControllerInfo("", feignMethod);
+        PsiClass psiClass = feignMethod.getContainingClass();
+        ControllerInfo feignInfo = JavaSourceFileUtil.extractControllerInfo(extractFeignParentPathFromClassAnnotation(psiClass), feignMethod);
         if(feignInfo != null){
             String path = feignInfo.getPath();
             if(StringUtils.isNotBlank(path)){
@@ -361,8 +371,9 @@ public class JavaSourceFileUtil {
             if (isFeignInterface(psiClass)) {
                 // 解析类中的方法，提取接口路径
                 PsiMethod[] methods = psiClass.getMethods();
+                String parentPath = extractFeignParentPathFromClassAnnotation(psiClass);
                 for (PsiMethod method : methods) {
-                    ControllerInfo feignInfo = extractControllerInfo("", method);
+                    ControllerInfo feignInfo = extractControllerInfo(parentPath, method);
                     if (feignInfo != null) {
                         // 设置方法信息
                         feignInfo.setMethod(method);
@@ -379,6 +390,23 @@ public class JavaSourceFileUtil {
         MyCacheManager.setFeignCacheData(project, feignCacheData);
 
         return feignInfos;
+    }
+
+    /**
+     * 提取@FeignClient path属性值
+     */
+    public static String extractFeignParentPathFromClassAnnotation(PsiClass psiClass) {
+        PsiAnnotation annotation = psiClass.getAnnotation("org.springframework.cloud.openfeign.FeignClient");
+        PsiNameValuePair[] attributes = annotation.getParameterList().getAttributes();
+        for (PsiNameValuePair attribute : attributes) {
+            if ("path".equals(attribute.getName())) {
+                PsiAnnotationMemberValue value = attribute.getValue();
+                if (value instanceof PsiLiteralExpression) {
+                    return ((PsiLiteralExpression) value).getValue().toString();
+                }
+            }
+        }
+        return "";
     }
     // 判断类是否带有@FeignClient注解
     private static boolean isFeignInterface(PsiClass psiClass) {
